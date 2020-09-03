@@ -3,6 +3,7 @@
 This is a simple [Web Data Connector](https://tableau.github.io/webdataconnector/docs/) for CSV files hosted on the web.
 
 ## How to Use
+
 1. Enter your CSV URL.
 1. Optional: Add a Bearer token or change the HTTP method.
 1. Click Get Data!
