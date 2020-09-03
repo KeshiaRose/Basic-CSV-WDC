@@ -1,0 +1,6 @@
+{
+  "name": "Basic CSV WDC",
+  "description": "A simple Tableau Web Data Connector for connecting to CSVs hosted on the web.",
+  "repository": "https://github.com/KeshiaRose/Basic-CSV-WDC",
+  "keywords": ["csv", "tableau", "wdc"]
+}
