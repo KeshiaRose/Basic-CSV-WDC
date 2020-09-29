@@ -1,5 +1,13 @@
 /* global tableau Papa */
 
+///////////////////////////////////////////////////////////////////////
+// CSV Web Data Connector														        				 //
+// A Tableau Web Data Connector for connecting to hosted CSVs.       //
+// Author: Keshia Rose                                               //
+// GitHub: https://github.com/KeshiaRose/Basic-CSV-WDC               //
+// Version 1.0                                                       //
+///////////////////////////////////////////////////////////////////////
+
 // Test URLs
 // https://en.unesco.org/sites/default/files/covid_impact_education.csv
 // https://opendata.ecdc.europa.eu/covid19/casedistribution/csv

@@ -1,3 +1,11 @@
+///////////////////////////////////////////////////////////////////////
+// CSV Web Data Connector														        				 //
+// A Tableau Web Data Connector for connecting to hosted CSVs.       //
+// Author: Keshia Rose                                               //
+// GitHub: https://github.com/KeshiaRose/Basic-CSV-WDC               //
+// Version 1.0                                                       //
+///////////////////////////////////////////////////////////////////////
+
 const express = require("express");
 const fetch = require("node-fetch");
 const app = express();
