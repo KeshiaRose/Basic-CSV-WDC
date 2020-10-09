@@ -31,7 +31,8 @@ app.post("/proxy/*", async (req, res) => {
   
   try {
     let response = await fetch(url, options);
-    response.ok ? res.send({ body: await response.text()}) : res.send({ error: response.statusText });
+    let data = await response.text();
+    response.ok ? res.send({ body: data}) : res.send({ error: response.statusText });
   } catch (error) {
     res.send({ error: error.message });
   }
