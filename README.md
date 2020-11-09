@@ -1,3 +1,5 @@
+![Working!](https://img.shields.io/badge/Status-Working-brightgreen)
+
 # Basic CSV Web Data Connector
 
 This is a simple [Web Data Connector](https://tableau.github.io/webdataconnector/docs/) for CSVs hosted on the web.
