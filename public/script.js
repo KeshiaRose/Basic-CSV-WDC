@@ -17,16 +17,35 @@ let cachedTableData; // Always a JSON object
 
 let myConnector = tableau.makeConnector();
 
+// Populate inputs if were previously entered
+myConnector.init = function(initCallback) {
+  if (
+    tableau.phase == tableau.phaseEnum.interactivePhase &&
+    tableau.connectionData.length > 0
+  ) {
+    const conData = JSON.parse(tableau.connectionData);
+    $("#url").val(conData.dataUrl || "");
+    $("#method").val(conData.method || "GET");
+    $("#token").val(tableau.password || "");
+    $("#delimiter").val(conData.delimiter || "");
+  }
+
+  initCallback();
+};
+
 // Create the schemas for each table
 myConnector.getSchema = async function(schemaCallback) {
   console.log("Creating table schema.");
   let conData = JSON.parse(tableau.connectionData);
   let dataUrl = conData.dataUrl;
   let method = conData.method;
+  let delimiter =
+    conData.delimiter && conData.delimiter !== "" ? conData.delimiter : ",";
   let token = tableau.password;
 
   let data =
-    cachedTableData || (await _retrieveCSVData({ dataUrl, method, token }));
+    cachedTableData ||
+    (await _retrieveCSVData({ dataUrl, method, delimiter, token }));
 
   let cols = [];
 
@@ -53,13 +72,23 @@ myConnector.getData = async function(table, doneCallback) {
   let conData = JSON.parse(tableau.connectionData);
   let dataUrl = conData.dataUrl;
   let method = conData.method;
+  let delimiter =
+    conData.delimiter && conData.delimiter !== "" ? conData.delimiter : ",";
   let token = tableau.password;
   let tableSchemas = [];
 
   let data =
-    cachedTableData || (await _retrieveCSVData({ dataUrl, method, token }));
+    cachedTableData ||
+    (await _retrieveCSVData({ dataUrl, method, delimiter, token }));
 
-  table.appendRows(data.rows);
+  let row_index = 0;
+  let size = 10000;
+  while (row_index < data.rows.length) {
+    table.appendRows(data.rows.slice(row_index, size + row_index));
+    row_index += size;
+    tableau.reportProgress("Getting row: " + row_index);
+  }
+
   doneCallback();
 };
 
@@ -73,6 +102,7 @@ function _submitDataToTableau() {
     .trim();
   let method = $("#method").val();
   let token = $("#token").val();
+  let delimiter = $("#delimiter").val();
   if (!dataUrl) return _error("No data entered.");
 
   // const urlRegex = /^(?:(?:(?:https?|ftp):)?\/\/)(?:\S+(?::\S*)?@)?(?:(?!(?:10|127)(?:\.\d{1,3}){3})(?!(?:169\.254|192\.168)(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)(?:\.(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)*(?:\.(?:[a-z\u00a1-\uffff]{2,})))(?::\d{2,5})?(?:[/?#]\S*)?$/i;
@@ -80,14 +110,14 @@ function _submitDataToTableau() {
   const result = dataUrl.match(urlRegex);
   if (result === null) return _error("URL is not valid.");
 
-  tableau.connectionData = JSON.stringify({ dataUrl, method });
+  tableau.connectionData = JSON.stringify({ dataUrl, method, delimiter });
   tableau.password = token;
 
   tableau.submit();
 }
 
 // Gets data from URL or string. Inputs are all strings. Always returns JSON data, even if XML input.
-async function _retrieveCSVData({ dataUrl, method, token }) {
+async function _retrieveCSVData({ dataUrl, method, delimiter, token }) {
   let result = await $.post("/proxy/" + dataUrl, { method, token });
   if (result.error) {
     if (tableau.phase !== "interactive") {
@@ -99,14 +129,14 @@ async function _retrieveCSVData({ dataUrl, method, token }) {
     return;
   }
 
-  cachedTableData = _csv2table(result.body);
+  cachedTableData = _csv2table(result.body, delimiter);
   return cachedTableData;
 }
 
 // Turns tabular data into json for Tableau input
-function _csv2table(csv) {
+function _csv2table(csv, delimiter) {
   let lines = Papa.parse(csv, {
-    delimiter: ",",
+    delimiter,
     newline: "\n",
     dynamicTyping: true
   }).data;
@@ -132,7 +162,7 @@ function _csv2table(csv) {
   let lineLength = counts.reduce((m, c) =>
     counts.filter(v => v === c).length > m ? c : m
   );
-  
+
   for (let line of lines) {
     if (line.length === lineLength) {
       let obj = {};
@@ -172,7 +202,7 @@ function _csv2table(csv) {
       }
       rows.push(obj);
     } else {
-      console.log("Row ommited due to mismatched length.", line)
+      console.log("Row ommited due to mismatched length.", line);
     }
   }
 
@@ -221,3 +251,16 @@ function _error(message) {
   $(".error").html(message);
   $("html, body").animate({ scrollTop: $(document).height() }, "fast");
 }
+
+$("#url").keypress(function(event) {
+  if (event.keyCode === 13) {
+    _submitDataToTableau();
+  }
+});
+
+$("#delimiter").keydown(function(event) {
+  if (event.keyCode === 9) {
+    event.preventDefault();
+    $("#delimiter").val("\t");
+  }
+});
