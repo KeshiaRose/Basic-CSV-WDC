@@ -86,13 +86,17 @@ body {
   margin: 0;
 }
 
-.bearerDiv {
+.advDiv {
   display: flex;
   align-items: center;
 }
 
-.bearerLabel {
+.advLabel {
   margin-right: 5px;
+}
+
+#delimiter {
+  width: 50px;
 }
 
 a {

@@ -20,26 +20,32 @@
       <div class="card">
         <div class="row">
           <span class="header">CSV URL Connector</span>
-          <a
-            target="_blank"
-            href="https://github.com/KeshiaRose/Basic-CSV-WDC"
-          >
+          <a target="_blank" href="https://github.com/KeshiaRose/Basic-CSV-WDC">
             <div class="info" title="More Info">?</div>
           </a>
         </div>
+
         <p class="label">Enter your CSV's URL:</p>
         <div class="row">
           <input id="url" type="url" />
         </div>
+
         <p class="label small" onclick="toggleAdvanced()">Advanced +</p>
-        <div class="bearerDiv hidden" id="advanced">
-          <p class="label bearerLabel">Bearer token:</p>
-          <input id="token" type="text" />
-          <select id="method">
-            <option value="GET" selected>GET</option>
-            <option value="POST">POST</option>
-          </select>
+        <div class="hidden" id="advanced">
+          <div class="advDiv">
+            <p class="label advLabel">Bearer token:</p>
+            <input id="token" type="text" />
+            <select id="method">
+              <option value="GET" selected>GET</option>
+              <option value="POST">POST</option>
+            </select>
+          </div>
+          <div class="advDiv">
+            <p class="label advLabel">Custom delimiter:</p>
+            <input id="delimiter" type="text" maxlength="1" size="1"/>
+          </div>
         </div>
+
         <button class="primary" onclick="_submitDataToTableau()">
           Get Data!
         </button>
