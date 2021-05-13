@@ -5,19 +5,21 @@
 // A Tableau Web Data Connector for connecting to hosted CSVs.       //
 // Author: Keshia Rose                                               //
 // GitHub: https://github.com/KeshiaRose/Basic-CSV-WDC               //
-// Version 1.0                                                       //
+// Version 2.0                                                       //
 ///////////////////////////////////////////////////////////////////////
 
 // Test URLs
-// https://en.unesco.org/sites/default/files/covid_impact_education.csv
-// https://opendata.ecdc.europa.eu/covid19/casedistribution/csv
-// https://data.cityofnewyork.us/resource/ic3t-wcy2.csv
+// https://en.unesco.org/sites/default/files/covid_impact_education.csv (<1 MB)
+// https://opendata.ecdc.europa.eu/covid19/casedistribution/csv (4 MB)
+// https://data.cityofnewyork.us/resource/ic3t-wcy2.csv (<1 MB)
+// https://media.githubusercontent.com/media/microsoft/Bing-COVID-19-Data/master/data/Bing-COVID19-Data.csv (180MB)
+// https://www.data.gouv.fr/fr/datasets/r/406c6a23-e283-4300-9484-54e78c8ae675 (12MB) (; delimited!!)
 
-let cachedTableData; // Always a JSON object
+let savedCSVData; // Always a string
 
 let myConnector = tableau.makeConnector();
 
-// Populate inputs if were previously entered
+// Populate inputs if they were previously entered
 myConnector.init = function(initCallback) {
   if (
     tableau.phase == tableau.phaseEnum.interactivePhase &&
@@ -28,33 +30,54 @@ myConnector.init = function(initCallback) {
     $("#method").val(conData.method || "GET");
     $("#token").val(tableau.password || "");
     $("#delimiter").val(conData.delimiter || "");
+    if (conData.fastMode) {
+      $("#typed,#fast").each(function() {
+        $(this).toggleClass("is-active");
+      });
+    }
   }
 
   initCallback();
 };
 
-// Create the schemas for each table
+// Fetch the data and create the schema
 myConnector.getSchema = async function(schemaCallback) {
-  console.log("Creating table schema.");
+  console.time("Creating table schema");
   let conData = JSON.parse(tableau.connectionData);
   let dataUrl = conData.dataUrl;
   let method = conData.method;
   let delimiter =
     conData.delimiter && conData.delimiter !== "" ? conData.delimiter : ",";
   let token = tableau.password;
+  let fastMode = conData.fastMode || false;
 
   let data =
-    cachedTableData ||
-    (await _retrieveCSVData({ dataUrl, method, delimiter, token }));
+    savedCSVData || (await _retrieveCSVData({ dataUrl, method, token }));
 
   let cols = [];
 
-  for (let field in data.headers) {
-    cols.push({
-      id: field,
-      alias: data.headers[field].alias,
-      dataType: data.headers[field].dataType
-    });
+  if (fastMode) {
+    let headers = data
+      .split(/\r?\n/)[0]
+      .split(delimiter)
+      .map(header => header.replace(/"/g, ""));
+    headers = _sanitizeKeys(headers);
+    for (let header in headers) {
+      cols.push({
+        id: header,
+        alias: headers[header].alias,
+        dataType: "string"
+      });
+    }
+  } else {
+    let headers = _determineTypes(_parse(data, delimiter, true));
+    for (let field in headers) {
+      cols.push({
+        id: field,
+        alias: headers[field].alias,
+        dataType: headers[field].dataType
+      });
+    }
   }
 
   let tableSchema = {
@@ -63,37 +86,48 @@ myConnector.getSchema = async function(schemaCallback) {
     columns: cols
   };
 
+  console.timeEnd("Creating table schema");
   schemaCallback([tableSchema]);
 };
 
 // Get the data for each table
 myConnector.getData = async function(table, doneCallback) {
-  console.log("Getting data.");
+  console.time("Getting data");
   let conData = JSON.parse(tableau.connectionData);
   let dataUrl = conData.dataUrl;
   let method = conData.method;
   let delimiter =
     conData.delimiter && conData.delimiter !== "" ? conData.delimiter : ",";
   let token = tableau.password;
+  let fastMode = conData.fastMode || false;
   let tableSchemas = [];
 
   let data =
-    cachedTableData ||
-    (await _retrieveCSVData({ dataUrl, method, delimiter, token }));
+    savedCSVData || (await _retrieveCSVData({ dataUrl, method, token }));
+
+  let rows;
+  if (fastMode) {
+    rows = _parse(data, delimiter, false).slice(1);
+  } else {
+    rows = _cleanData(_parse(data, delimiter, true));
+  }
 
   let row_index = 0;
   let size = 10000;
-  while (row_index < data.rows.length) {
-    table.appendRows(data.rows.slice(row_index, size + row_index));
+  while (row_index < rows.length) {
+    table.appendRows(rows.slice(row_index, size + row_index));
     row_index += size;
     tableau.reportProgress("Getting row: " + row_index);
   }
+  console.timeEnd("Getting data");
 
   doneCallback();
 };
 
 tableau.connectionName = "CSV Data";
 tableau.registerConnector(myConnector);
+window._tableau.triggerInitialization &&
+  window._tableau.triggerInitialization(); // Make sure WDC is initialized properly
 
 // Grabs wanted fields and submits data to Tableau
 async function _submitDataToTableau() {
@@ -103,8 +137,9 @@ async function _submitDataToTableau() {
   let method = $("#method").val();
   let token = $("#token").val();
   let delimiter = $("#delimiter").val();
+  let fastMode = $("#fast").attr("class") === "is-active";
   if (!dataUrl) return _error("No data entered.");
-  
+
   const urlRegex = /^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/|ftp:\/\/)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$/gm;
   const result = dataUrl.match(urlRegex);
   if (result === null) {
@@ -112,16 +147,49 @@ async function _submitDataToTableau() {
     await new Promise(resolve => setTimeout(resolve, 2000));
   }
 
-  tableau.connectionData = JSON.stringify({ dataUrl, method, delimiter });
+  tableau.connectionData = JSON.stringify({
+    dataUrl,
+    method,
+    delimiter,
+    fastMode
+  });
   tableau.password = token;
 
   tableau.submit();
 }
 
-// Gets data from URL or string. Inputs are all strings. Always returns JSON data, even if XML input.
-async function _retrieveCSVData({ dataUrl, method, delimiter, token }) {
-  let result = await $.post("/proxy/" + dataUrl, { method, token });
-  if (result.error) {
+// Gets data from CSV URL
+async function _retrieveCSVData({ dataUrl, method, token }) {
+  console.time("Fetching data");
+  let result;
+
+  try {
+    let options = {
+      method
+    };
+
+    if (token) {
+      options["headers"] = {
+        Authorization: `Bearer ${token}`
+      };
+    }
+    const response = await fetch(dataUrl, options);
+    result = await response.text();
+  } catch (error) {
+    try {
+      result = await $.post("/proxy/" + dataUrl, { method, token });
+    } catch (error) {
+      if (tableau.phase !== "interactive") {
+        console.error(error);
+        tableau.abortWithError(error);
+      } else {
+        _error(error);
+      }
+      return;
+    }
+  }
+
+  if (!result || result.error) {
     if (tableau.phase !== "interactive") {
       console.error(result.error);
       tableau.abortWithError(result.error);
@@ -130,22 +198,15 @@ async function _retrieveCSVData({ dataUrl, method, delimiter, token }) {
     }
     return;
   }
-
-  cachedTableData = _csv2table(result.body, delimiter);
-  return cachedTableData;
+  savedCSVData = result;
+  console.timeEnd("Fetching data");
+  return savedCSVData;
 }
 
-// Turns tabular data into json for Tableau input
-function _csv2table(csv, delimiter) {
-  let lines = Papa.parse(csv, {
-    delimiter,
-    newline: "\n",
-    dynamicTyping: true
-  }).data;
-  let fields = lines.shift();
+// Sanitizes headers so they work in Tableau without duplicates
+function _sanitizeKeys(fields) {
+  console.time("Sanitizing keys");
   let headers = {};
-  let rows = [];
-
   for (let field of fields) {
     let newKey = field.replace(/[^A-Za-z0-9_]/g, "_");
     let safeToAdd = false;
@@ -160,18 +221,41 @@ function _csv2table(csv, delimiter) {
 
     headers[newKey] = { alias: field };
   }
-  let counts = lines.map(line => line.length);
+  console.timeEnd("Sanitizing keys");
+  return headers;
+}
+
+// Parses csv to array of arrays
+function _parse(csv, delimiter, dynamicTyping) {
+  console.time("Parsing csv");
+  const lines = Papa.parse(csv, {
+    delimiter,
+    newline: "\n",
+    dynamicTyping
+  }).data;
+  console.timeEnd("Parsing csv");
+  return lines;
+}
+
+// Determines column data types based on first X rows
+function _determineTypes(lines) {
+  console.time("Determining data types");
+  let fields = lines.shift();
+  let testLines = lines.slice(0, 100);
+  let headers = _sanitizeKeys(fields);
+  let headerKeys = Object.keys(headers);
+  let rows = [];
+
+  let counts = testLines.map(line => line.length);
   let lineLength = counts.reduce((m, c) =>
     counts.filter(v => v === c).length > m ? c : m
   );
 
-  for (let line of lines) {
+  for (let line of testLines) {
     if (line.length === lineLength) {
-      let obj = {};
-      let headerKeys = Object.keys(headers);
-      for (let field in headerKeys) {
-        let header = headers[headerKeys[field]];
-        let value = line[field];
+      for (let index in headerKeys) {
+        let header = headers[headerKeys[index]];
+        let value = line[index];
 
         if (
           value === "" ||
@@ -179,30 +263,26 @@ function _csv2table(csv, delimiter) {
           value === "null" ||
           value === null
         ) {
-          obj[headerKeys[field]] = null;
           header.null = header.null ? header.null + 1 : 1;
-        } else if (value === "true" || value === true) {
-          obj[headerKeys[field]] = true;
-          header.bool = header.bool ? header.bool + 1 : 1;
-        } else if (value === "false" || value === false) {
-          obj[headerKeys[field]] = false;
+        } else if (
+          value === "true" ||
+          value === true ||
+          value === "false" ||
+          value === false
+        ) {
           header.bool = header.bool ? header.bool + 1 : 1;
         } else if (typeof value === "object") {
-          obj[headerKeys[field]] = value.toISOString();
           header.string = header.string ? header.string + 1 : 1;
         } else if (!isNaN(value)) {
-          obj[headerKeys[field]] = value;
           if (parseInt(value) == value) {
             header.int = header.int ? header.int + 1 : 1;
           } else {
             header.float = header.float ? header.float + 1 : 1;
           }
         } else {
-          obj[headerKeys[field]] = value;
           header.string = header.string ? header.string + 1 : 1;
         }
       }
-      rows.push(obj);
     } else {
       console.log("Row ommited due to mismatched length.", line);
     }
@@ -237,7 +317,56 @@ function _csv2table(csv, delimiter) {
     headers[field].dataType = "string";
   }
 
-  return { headers, rows };
+  console.timeEnd("Determining data types");
+  return headers;
+}
+
+function _cleanData(lines) {
+  console.time("Cleaning data");
+  let fields = lines.shift();
+  let headers = _sanitizeKeys(fields);
+  let headerKeys = Object.keys(headers);
+  let rows = [];
+
+  let counts = lines.map(line => line.length);
+  let lineLength = counts.reduce((m, c) =>
+    counts.filter(v => v === c).length > m ? c : m
+  );
+
+  for (let line of lines) {
+    if (line.length === lineLength) {
+      let obj = {};
+      let headerKeys = Object.keys(headers);
+      for (let field in headerKeys) {
+        let header = headers[headerKeys[field]];
+        let value = line[field];
+
+        if (
+          value === "" ||
+          value === '""' ||
+          value === "null" ||
+          value === null
+        ) {
+          obj[headerKeys[field]] = null;
+        } else if (value === "true" || value === true) {
+          obj[headerKeys[field]] = true;
+        } else if (value === "false" || value === false) {
+          obj[headerKeys[field]] = false;
+        } else if (typeof value === "object") {
+          obj[headerKeys[field]] = value.toISOString();
+        } else if (!isNaN(value)) {
+          obj[headerKeys[field]] = value;
+        } else {
+          obj[headerKeys[field]] = value;
+        }
+      }
+      rows.push(obj);
+    } else {
+      console.log("Row ommited due to mismatched length.", line);
+    }
+  }
+  console.timeEnd("Cleaning data");
+  return rows;
 }
 
 function toggleAdvanced() {
@@ -253,6 +382,14 @@ function _error(message) {
   $(".error").html(message);
   $("html, body").animate({ scrollTop: $(document).height() }, "fast");
 }
+
+$("#typed,#fast").click(function() {
+  if ($(this).attr("class") !== "is-active") {
+    $("#typed,#fast").each(function() {
+      $(this).toggleClass("is-active");
+    });
+  }
+});
 
 $("#url").keypress(function(event) {
   if (event.keyCode === 13) {

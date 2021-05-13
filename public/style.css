@@ -1,11 +1,14 @@
+@import "https://cdn.jsdelivr.net/npm/bulma@0.9.2/css/bulma.min.css";
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap");
+
 :root {
   --main: #5960AF;
-  --main-hover: #38376F;
+  --mainDark: #38376F;
 }
 
 * {
   box-sizing: border-box;
-  font-family: "Benton Sans", Helvetica, Arial, sans-srif;
+  font-family: Inter, Helvetica, Arial, sans-serif;
 }
 
 html,
@@ -16,48 +19,18 @@ body {
   margin: 0;
   background-color: #FFF;
   font-size: 16px;
+  overflow:hidden;
 }
 
-.loadError {
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-}
-
-.container {
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.card {
-  background-color: #FFF;
-  padding: 15px;
-  width: 500px;
-}
-
-.row {
-  display: flex;
-  justify-content: space-between;
-}
-
-.header {
-  margin-top: 0;
-  margin-bottom: 10px;
+.title {
   color: var(--main);
-  display: block;
-  font-size: 32px;
-  font-weight: bold;
 }
 
 .info {
-  margin: 9px 0px;
+  margin: 10px 0px auto 10px;
   width: 20px;
   height: 20px;
-  line-height: 20px;
+  line-height: 18px;
   text-align: center;
   border: 1px solid #AAA;
   color: #888;
@@ -71,85 +44,41 @@ body {
   color: var(--main);
 }
 
-.hidden {
-  display: none !important;
-  visibility: hidden !important;
-}
-
-.small {
-  font-size: 12px;
-  color: #555;
+.advanced {
   cursor: pointer;
+  margin-bottom: 10px;
 }
 
-.label {
-  margin: 0;
+.button.is-primary {
+  background-color: var(--main)
 }
 
-.advDiv {
-  display: flex;
-  align-items: center;
+.button.is-primary:hover, .button.is-primary:active  {
+  background-color: var(--mainDark)
 }
 
-.advLabel {
-  margin-right: 5px;
-}
-
-#delimiter {
-  width: 50px;
-}
-
-a {
-  text-decoration: none;
-}
-
-input {
-  padding: 5px;
-  margin: 5px 0px;
-  border: 1px solid #CCC;
-  border-radius: 3px;
-  font-size: 14px;
-  width: 100%;
-  resize: vertical;
-  flex: 1;
-}
-
-select {
-  padding: 5px;
-  margin: 5px 0px 5px 5px;
-  border: 1px solid #CCC;
-  border-radius: 3px;
-  font-size: 14px;
-  background-color: #F0F0F0;
-  width: 60px;
-}
-
-button {
-  padding: 10px;
-  margin-top: 10px;
-  width: 100%;
-  border: 0;
-  border-radius: 3px;
-  font-size: 16px;
-  cursor: pointer;
-}
-
-.primary {
-  margin-bottom: 20px;
-  background-color: var(--main);
-  color: #FFF;
-}
-
-.primary:hover {
-  background-color: var(--main-hover);
+.tabs.is-toggle li.is-active a {
+    background-color: var(--main);
+    border-color: var(--main);
+    color: #fff;
+    z-index: 1;
 }
 
 .error {
   color: #D63E41;
   text-align: center;
   margin-top: -10px;
-  margin-bottom: 5px;
   font-weight: bold;
   display: none;
   font-size: 12px;
+}
+
+.hidden {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+.input:active, .input:focus, .is-active.input, .is-active.textarea, .is-focused.input, .is-focused.textarea, .select select.is-active, .select select.is-focused, .select select:active, .select select:focus, .textarea:active, .textarea:focus {
+    border-color: var(--main);
+    box-shadow: 0 0 0 0.125em rgb(89 96 175 / 25%);
 }

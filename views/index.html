@@ -11,54 +11,106 @@
     />
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/papaparse@5.2.0/papaparse.min.js"></script>
-    <script src="https://connectors.tableau.com/libs/tableauwdc-2.3.latest.js"></script>
+    <script src="https://connectors.tableau.com/libs/tableauwdc-2.3.latest.min.js"></script>
     <script src="/script.js" defer></script>
     <link rel="stylesheet" href="/style.css" />
   </head>
   <body>
-    <div class="container">
-      <div class="card">
-        <div class="row">
-          <span class="header">CSV URL Connector</span>
-          <a target="_blank" href="https://github.com/KeshiaRose/Basic-CSV-WDC">
-            <div class="info" title="More Info">?</div>
-          </a>
-        </div>
-
-        <p class="label">Enter your CSV's URL:</p>
-        <div class="row">
-          <input id="url" type="url" />
-        </div>
-
-        <p class="label small" onclick="toggleAdvanced()">Advanced +</p>
-        <div class="hidden" id="advanced">
-          <div class="advDiv">
-            <p class="label advLabel">Bearer token:</p>
-            <input id="token" type="text" />
-            <select id="method">
-              <option value="GET" selected>GET</option>
-              <option value="POST">POST</option>
-            </select>
+    <section class="section">
+      <div class="container">
+        <div class="">
+          <div class="is-flex is-justify-content-center">
+            <h1 class="title">CSV URL Connector</h1>
+            <a
+              target="_blank"
+              href="https://github.com/KeshiaRose/Basic-CSV-WDC"
+            >
+              <div class="info" title="More Info">?</div>
+            </a>
           </div>
-          <div class="advDiv">
-            <p class="label advLabel">Custom delimiter:</p>
-            <input id="delimiter" type="text" maxlength="1" size="1"/>
-          </div>
-        </div>
 
-        <button class="primary" onclick="_submitDataToTableau()">
-          Get Data!
-        </button>
-        <div class="error"></div>
+          <div class="field">
+            <label class="label">Enter your CSV's URL:</label>
+            <div class="control">
+              <input class="input" id="url" type="url" />
+            </div>
+          </div>
+
+          <p class="advanced" onclick="toggleAdvanced()">Advanced +</p>
+          <div class="hidden block" id="advanced">
+            <div class="field">
+              <label class="label is-small">Method</label>
+              <div class="control">
+                <div class="select is-fullwidth is-small">
+                  <select id="method">
+                    <option value="GET" selected>GET</option>
+                    <option value="POST">POST</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="field">
+              <label class="label is-small">Bearer token:</label>
+              <div class="control">
+                <input class="input is-small" id="token" type="text" />
+              </div>
+            </div>
+
+            <div class="field">
+              <label class="label is-small">Custom delimiter:</label>
+              <div class="control">
+                <input
+                  class="input is-small"
+                  id="delimiter"
+                  type="text"
+                  maxlength="1"
+                  size="1"
+                  placeholder="One character, default is comma"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div class="tabs is-toggle is-fullwidth is-small">
+            <ul>
+              <li id="typed" class="is-active">
+                <a class="is-flex is-flex-direction-column">
+                  <span><b>Data Typed Mode</b></span>
+                  <span>Automatically infer column data types</span>
+                  <span><i>Slower, don't use with large files</i></span>
+                </a>
+              </li>
+              <li id="fast">
+                <a class="is-flex is-flex-direction-column">
+                  <span><b>Fast Mode</b></span>
+                  <span>Bring all values in as strings</span>
+                  <span><i>Faster, but you manually set data types</i></span>
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          <div class="buttons">
+            <button
+              class="button is-primary is-fullwidth"
+              onclick="_submitDataToTableau()"
+            >
+              Get Data!
+            </button>
+          </div>
+          <div class="error"></div>
+        </div>
       </div>
-    </div>
+    </section>
+
     <img
       src="https://devplat-hit-counter.herokuapp.com/counter.png"
       alt=""
       style="display:none;"
       aria-hidden="true"
     /><!-- Hit tracker -->
-    <script>
+        <script>
       // Catch browser or non-current Desktop users.
       setTimeout(function(){
         try {
