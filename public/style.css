@@ -82,3 +82,11 @@ body {
     border-color: var(--main);
     box-shadow: 0 0 0 0.125em rgb(89 96 175 / 25%);
 }
+
+.loadError {
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
