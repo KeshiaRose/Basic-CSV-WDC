@@ -26,7 +26,7 @@ Note that this will require your Tableau Server to restart!
 If you want to use this WDC on Tableau Online you will need to set it up using [Tableau Bridge](https://help.tableau.com/current/online/en-us/qs_refresh_local_data.htm)
 
 ## Deploy your own!
-[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/KeshiaRose/Basic-CSV-WDC)
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/rferraton/Basic-CSV-WDC)
 
 [Remix it on glitch](https://glitch.com/edit/#!/remix/simple-csv-wdc)
 
