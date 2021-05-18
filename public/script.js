@@ -56,20 +56,7 @@ myConnector.getSchema = async function(schemaCallback) {
 
   let cols = [];
 
-  if (fastMode) {
-    let headers = data
-      .split(/\r?\n/)[0]
-      .split(delimiter)
-      .map(header => header.replace(/"/g, ""));
-    headers = _sanitizeKeys(headers);
-    for (let header in headers) {
-      cols.push({
-        id: header,
-        alias: headers[header].alias,
-        dataType: "string"
-      });
-    }
-  } else {
+
     let headers = _determineTypes(_parse(data, delimiter, true));
     for (let field in headers) {
       cols.push({
@@ -78,7 +65,7 @@ myConnector.getSchema = async function(schemaCallback) {
         dataType: headers[field].dataType
       });
     }
-  }
+
 
   let tableSchema = {
     id: "csvData",
@@ -107,7 +94,7 @@ myConnector.getData = async function(table, doneCallback) {
 
   let rows;
   if (fastMode) {
-    rows = _parse(data, delimiter, false).slice(1);
+    rows = _parse(data, delimiter, true).slice(1);
   } else {
     rows = _cleanData(_parse(data, delimiter, true));
   }
