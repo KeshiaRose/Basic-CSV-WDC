@@ -8,8 +8,8 @@ This is a simple [Web Data Connector](https://tableau.github.io/webdataconnector
 
 1. Start a new WDC connection in Tableau Desktop 2019.4 or higher and enter: https://basic-csv-wdc.herokuapp.com/
 1. Enter your CSV URL.
-1. Optional: Change the HTTP method, add a Bearer token or change the delimiter.
-1. Decide if you want Data Typed Mode or Fast Mode (Use Fast Mode for files bigger than 5MB or ~100k rows).
+1. Advanced options: Change the HTTP method, add a Bearer token, or change the delimiter.
+1. Decide which mode to use (Loose Typed recommended).
 1. Click **Get Data!**
 
 ## How to refresh

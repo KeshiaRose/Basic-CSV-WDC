@@ -5,7 +5,7 @@
 // A Tableau Web Data Connector for connecting to hosted CSVs.       //
 // Author: Keshia Rose                                               //
 // GitHub: https://github.com/KeshiaRose/Basic-CSV-WDC               //
-// Version 2.0                                                       //
+// Version 2.1                                                       //
 ///////////////////////////////////////////////////////////////////////
 
 // Test URLs
@@ -31,9 +31,10 @@ myConnector.init = function(initCallback) {
     $("#token").val(tableau.password || "");
     $("#delimiter").val(conData.delimiter || "");
     if (conData.fastMode) {
-      $("#typed,#fast").each(function() {
-        $(this).toggleClass("is-active");
-      });
+      _setMode("fast");
+    }
+    if (conData.mode) {
+      _setMode(conData.mode);
     }
   }
 
@@ -49,14 +50,14 @@ myConnector.getSchema = async function(schemaCallback) {
   let delimiter =
     conData.delimiter && conData.delimiter !== "" ? conData.delimiter : ",";
   let token = tableau.password;
-  let fastMode = conData.fastMode || false;
+  let mode = conData.fastMode ? "fast" : conData.mode ? conData.mode : "typed";
 
   let data =
     savedCSVData || (await _retrieveCSVData({ dataUrl, method, token }));
 
   let cols = [];
 
-  if (fastMode) {
+  if (mode === "fast") {
     let headers = data
       .split(/\r?\n/)[0]
       .split(delimiter)
@@ -90,7 +91,7 @@ myConnector.getSchema = async function(schemaCallback) {
   schemaCallback([tableSchema]);
 };
 
-// Get the data for each table
+// Fetch the data and parse
 myConnector.getData = async function(table, doneCallback) {
   console.time("Getting data");
   let conData = JSON.parse(tableau.connectionData);
@@ -99,17 +100,25 @@ myConnector.getData = async function(table, doneCallback) {
   let delimiter =
     conData.delimiter && conData.delimiter !== "" ? conData.delimiter : ",";
   let token = tableau.password;
-  let fastMode = conData.fastMode || false;
+  let mode = conData.fastMode ? "fast" : conData.mode ? conData.mode : "typed";
   let tableSchemas = [];
 
   let data =
     savedCSVData || (await _retrieveCSVData({ dataUrl, method, token }));
 
   let rows;
-  if (fastMode) {
-    rows = _parse(data, delimiter, false).slice(1);
-  } else {
-    rows = _cleanData(_parse(data, delimiter, true));
+  switch (mode) {
+    case "fast":
+      rows = _parse(data, delimiter, false).slice(1);
+      break;
+    case "typed":
+      rows = _cleanData(_parse(data, delimiter, true));
+      break;
+    case "loosetyped":
+      rows = _parse(data, delimiter, true).slice(1);
+      break;
+    default:
+      rows = _cleanData(_parse(data, delimiter, true));
   }
 
   let row_index = 0;
@@ -129,7 +138,7 @@ tableau.registerConnector(myConnector);
 window._tableau.triggerInitialization &&
   window._tableau.triggerInitialization(); // Make sure WDC is initialized properly
 
-// Grabs wanted fields and submits data to Tableau
+// Grabs wanted fields and submits configuration to Tableau
 async function _submitDataToTableau() {
   let dataUrl = $("#url")
     .val()
@@ -137,7 +146,12 @@ async function _submitDataToTableau() {
   let method = $("#method").val();
   let token = $("#token").val();
   let delimiter = $("#delimiter").val();
-  let fastMode = $("#fast").attr("class") === "is-active";
+  let mode =
+    $("#fast").attr("class") === "is-active"
+      ? "fast"
+      : $("#typed").attr("class") === "is-active"
+      ? "typed"
+      : "loosetyped";
   if (!dataUrl) return _error("No data entered.");
 
   const urlRegex = /^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/|ftp:\/\/)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$/gm;
@@ -151,7 +165,7 @@ async function _submitDataToTableau() {
     dataUrl,
     method,
     delimiter,
-    fastMode
+    mode
   });
   tableau.password = token;
 
@@ -237,7 +251,7 @@ function _parse(csv, delimiter, dynamicTyping) {
   return lines;
 }
 
-// Determines column data types based on first X rows
+// Determines column data types based on first 100 rows
 function _determineTypes(lines) {
   console.time("Determining data types");
   let fields = lines.shift();
@@ -321,6 +335,7 @@ function _determineTypes(lines) {
   return headers;
 }
 
+// Tries to clean up data to appropriately match data types
 function _cleanData(lines) {
   console.time("Cleaning data");
   let fields = lines.shift();
@@ -369,6 +384,7 @@ function _cleanData(lines) {
   return rows;
 }
 
+// Show/hide advanced options
 function toggleAdvanced() {
   $("#advanced").toggleClass("hidden");
 }
@@ -383,20 +399,22 @@ function _error(message) {
   $("html, body").animate({ scrollTop: $(document).height() }, "fast");
 }
 
-$("#typed,#fast").click(function() {
-  if ($(this).attr("class") !== "is-active") {
-    $("#typed,#fast").each(function() {
-      $(this).toggleClass("is-active");
-    });
-  }
-});
+// Changes mode
+function _setMode(mode) {
+  $("#typed,#fast,#loosetyped").each(function() {
+    $(this).removeClass("is-active");
+  });
+  $(`#${mode}`).addClass("is-active");
+}
 
+// Submits when you push Enter
 $("#url").keypress(function(event) {
   if (event.keyCode === 13) {
     _submitDataToTableau();
   }
 });
 
+// Allows you to enter a tab as the delimiter
 $("#delimiter").keydown(function(event) {
   if (event.keyCode === 9) {
     event.preventDefault();
