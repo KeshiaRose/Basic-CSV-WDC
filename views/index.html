@@ -75,17 +75,24 @@
           <div class="tabs is-toggle is-fullwidth is-small">
             <ul>
               <li id="typed" class="is-active">
-                <a class="is-flex is-flex-direction-column">
-                  <span><b>Data Typed Mode</b></span>
-                  <span>Automatically infer column data types</span>
-                  <span><i>Slower, don't use with large files</i></span>
+                <a href="javascript:_setMode('typed')" class="is-flex is-flex-direction-column">
+                  <span><b>Strict Typed Mode</b></span>
+                  <span>Infer column data types and try to clean data</span>
+                  <span><i>Slow, don't use with large files</i></span>
                 </a>
               </li>
+              <li id="loosetyped">
+                <a href="javascript:_setMode('loosetyped')" class="is-flex is-flex-direction-column">
+                  <span><b>Loose Typed Mode</b></span>
+                  <span>Infer column data types but don't clean data</span>
+                  <span><i>Faster, use with well structured files</i></span>
+                </a>
+              </li>              
               <li id="fast">
-                <a class="is-flex is-flex-direction-column">
+                <a href="javascript:_setMode('fast')" class="is-flex is-flex-direction-column">
                   <span><b>Fast Mode</b></span>
-                  <span>Bring all values in as strings</span>
-                  <span><i>Faster, but you manually set data types</i></span>
+                  <span>Bring all values in as strings, no cleaning</span>
+                  <span><i>Fastest, but you manually set data types</i></span>
                 </a>
               </li>
             </ul>

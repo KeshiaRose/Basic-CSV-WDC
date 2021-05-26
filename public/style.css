@@ -19,7 +19,21 @@ body {
   margin: 0;
   background-color: #FFF;
   font-size: 16px;
-  overflow:hidden;
+  overflow: hidden;
+}
+
+.tabs {
+  overflow: hidden;
+  white-space: normal;
+  text-align: center;
+}
+
+ul {
+  width: 100%;
+}
+
+li {
+  width: 33%;
 }
 
 .title {
@@ -50,18 +64,19 @@ body {
 }
 
 .button.is-primary {
-  background-color: var(--main)
+  background-color: var(--main);
 }
 
-.button.is-primary:hover, .button.is-primary:active  {
-  background-color: var(--mainDark)
+.button.is-primary:hover,
+.button.is-primary:active {
+  background-color: var(--mainDark);
 }
 
 .tabs.is-toggle li.is-active a {
-    background-color: var(--main);
-    border-color: var(--main);
-    color: #fff;
-    z-index: 1;
+  background-color: var(--main);
+  border-color: var(--main);
+  color: #fff;
+  z-index: 1;
 }
 
 .error {
@@ -78,9 +93,20 @@ body {
   visibility: hidden !important;
 }
 
-.input:active, .input:focus, .is-active.input, .is-active.textarea, .is-focused.input, .is-focused.textarea, .select select.is-active, .select select.is-focused, .select select:active, .select select:focus, .textarea:active, .textarea:focus {
-    border-color: var(--main);
-    box-shadow: 0 0 0 0.125em rgb(89 96 175 / 25%);
+.input:active,
+.input:focus,
+.is-active.input,
+.is-active.textarea,
+.is-focused.input,
+.is-focused.textarea,
+.select select.is-active,
+.select select.is-focused,
+.select select:active,
+.select select:focus,
+.textarea:active,
+.textarea:focus {
+  border-color: var(--main);
+  box-shadow: 0 0 0 0.125em rgb(89 96 175 / 25%);
 }
 
 .loadError {
