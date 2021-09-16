@@ -116,3 +116,7 @@ li {
   align-items: center;
   flex-direction: column;
 }
+
+.tabs.is-toggle a, .tabs.is-fullwidth li {
+  height: 100%
+}

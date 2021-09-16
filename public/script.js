@@ -14,6 +14,7 @@
 // https://data.cityofnewyork.us/resource/ic3t-wcy2.csv (<1 MB)
 // https://media.githubusercontent.com/media/microsoft/Bing-COVID-19-Data/master/data/Bing-COVID19-Data.csv (180MB)
 // https://www.data.gouv.fr/fr/datasets/r/406c6a23-e283-4300-9484-54e78c8ae675 (12MB) (; delimited!!)
+// https://files.data.gouv.fr/lcsqa/concentrations-de-polluants-atmospheriques-reglementes/temps-reel/2021/FR_E2_2021-09-14.csv (12MB) (; delimited!! iso-8859-1 encoding)
 
 let savedCSVData; // Always a string
 
@@ -30,6 +31,7 @@ myConnector.init = function(initCallback) {
     $("#method").val(conData.method || "GET");
     $("#token").val(tableau.password || "");
     $("#delimiter").val(conData.delimiter || "");
+    $("#encoding").val(conData.encoding || "");
     if (conData.fastMode) {
       _setMode("fast");
     }
@@ -49,11 +51,14 @@ myConnector.getSchema = async function(schemaCallback) {
   let method = conData.method;
   let delimiter =
     conData.delimiter && conData.delimiter !== "" ? conData.delimiter : ",";
+  let encoding =
+    conData.encoding && conData.encoding !== "" ? conData.encoding : "";
   let token = tableau.password;
   let mode = conData.fastMode ? "fast" : conData.mode ? conData.mode : "typed";
 
   let data =
-    savedCSVData || (await _retrieveCSVData({ dataUrl, method, token }));
+    savedCSVData ||
+    (await _retrieveCSVData({ dataUrl, method, token, encoding }));
 
   let cols = [];
 
@@ -99,12 +104,15 @@ myConnector.getData = async function(table, doneCallback) {
   let method = conData.method;
   let delimiter =
     conData.delimiter && conData.delimiter !== "" ? conData.delimiter : ",";
+  let encoding =
+    conData.encoding && conData.encoding !== "" ? conData.encoding : "";
   let token = tableau.password;
   let mode = conData.fastMode ? "fast" : conData.mode ? conData.mode : "typed";
   let tableSchemas = [];
 
   let data =
-    savedCSVData || (await _retrieveCSVData({ dataUrl, method, token }));
+    savedCSVData ||
+    (await _retrieveCSVData({ dataUrl, method, token, encoding }));
 
   let rows;
   switch (mode) {
@@ -146,6 +154,7 @@ async function _submitDataToTableau() {
   let method = $("#method").val();
   let token = $("#token").val();
   let delimiter = $("#delimiter").val();
+  let encoding = $("#encoding").val();
   let mode =
     $("#fast").attr("class") === "is-active"
       ? "fast"
@@ -165,6 +174,7 @@ async function _submitDataToTableau() {
     dataUrl,
     method,
     delimiter,
+    encoding,
     mode
   });
   tableau.password = token;
@@ -173,28 +183,47 @@ async function _submitDataToTableau() {
 }
 
 // Gets data from CSV URL
-async function _retrieveCSVData({ dataUrl, method, token }) {
+async function _retrieveCSVData({ dataUrl, method, token, encoding }) {
   console.time("Fetching data");
   let result;
 
   try {
     let options = {
-      method
+      method,
+      headers: {
+        "Content-Type": "application/json"
+      }
     };
 
     if (token) {
-      options["headers"] = {
-        Authorization: `Bearer ${token}`
-      };
+      options.headers["Authorization"] = `Bearer ${token}`;
     }
+
     const response = await fetch(dataUrl, options);
-    result = await response.text();
+    if (encoding && encoding !== "") {
+      let buffer = await response.arrayBuffer();
+      const decoder = new TextDecoder(encoding);
+      result = decoder.decode(buffer);
+    } else {
+      result = await response.text();
+    }
   } catch (error) {
     try {
-      result = await $.post("/proxy/" + dataUrl, { method, token });
+      let options = {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          method,
+          token,
+          encoding
+        })
+      };
+      const response = await fetch("/proxy/" + dataUrl, options);
+      result = await response.text();
     } catch (error) {
       if (tableau.phase !== "interactive") {
-        console.error(error);
         tableau.abortWithError(error);
       } else {
         _error(error);
