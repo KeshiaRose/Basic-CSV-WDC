@@ -71,7 +71,14 @@
               </div>
             </div>
             <div class="field">
-              <label class="label is-small">Encoding: <a href="https://github.com/ashtuchkin/iconv-lite/wiki/Supported-Encodings" target="_blank">supported</a></label>
+              <label class="label is-small"
+                >Encoding:
+                <a
+                  href="https://github.com/ashtuchkin/iconv-lite/wiki/Supported-Encodings"
+                  target="_blank"
+                  >supported</a
+                ></label
+              >
               <div class="control">
                 <input
                   class="input is-small"
@@ -80,27 +87,36 @@
                   placeholder="Ex: iso-8859-1, default is utf-8"
                 />
               </div>
-            </div>            
+            </div>
           </div>
 
           <div class="tabs is-toggle is-fullwidth is-small">
             <ul>
               <li id="typed">
-                <a href="javascript:_setMode('typed')" class="is-flex is-flex-direction-column">
+                <a
+                  href="javascript:_setMode('typed')"
+                  class="is-flex is-flex-direction-column"
+                >
                   <span><b>Strict Typed Mode</b></span>
                   <span>Infer column data types and try to clean data</span>
                   <span><i>Slow, don't use with large files</i></span>
                 </a>
               </li>
               <li id="loosetyped" class="is-active">
-                <a href="javascript:_setMode('loosetyped')" class="is-flex is-flex-direction-column">
+                <a
+                  href="javascript:_setMode('loosetyped')"
+                  class="is-flex is-flex-direction-column"
+                >
                   <span><b>Loose Typed Mode</b></span>
                   <span>Infer column data types but don't clean data</span>
                   <span><i>Faster, use with well structured files</i></span>
                 </a>
-              </li>              
+              </li>
               <li id="fast">
-                <a href="javascript:_setMode('fast')" class="is-flex is-flex-direction-column">
+                <a
+                  href="javascript:_setMode('fast')"
+                  class="is-flex is-flex-direction-column"
+                >
                   <span><b>Fast Mode</b></span>
                   <span>Bring all values in as strings, no cleaning</span>
                   <span><i>Fastest, but you manually set data types</i></span>
@@ -128,8 +144,8 @@
       style="display:none;"
       aria-hidden="true"
     /><!-- Hit tracker -->
-        <script>
-      Catch browser or non-current Desktop users.
+    <script>
+      // Catch browser or non-current Desktop users.
       setTimeout(function(){
         try {
           var version = +tableau.platformVersion.split(".").slice(0,2).join(".");
