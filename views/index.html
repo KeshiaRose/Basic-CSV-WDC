@@ -70,6 +70,17 @@
                 />
               </div>
             </div>
+            <div class="field">
+              <label class="label is-small">Encoding: <a href="https://github.com/ashtuchkin/iconv-lite/wiki/Supported-Encodings" target="_blank">supported</a></label>
+              <div class="control">
+                <input
+                  class="input is-small"
+                  id="encoding"
+                  type="text"
+                  placeholder="Ex: iso-8859-1, default is utf-8"
+                />
+              </div>
+            </div>            
           </div>
 
           <div class="tabs is-toggle is-fullwidth is-small">
@@ -118,7 +129,7 @@
       aria-hidden="true"
     /><!-- Hit tracker -->
         <script>
-      // Catch browser or non-current Desktop users.
+      Catch browser or non-current Desktop users.
       setTimeout(function(){
         try {
           var version = +tableau.platformVersion.split(".").slice(0,2).join(".");

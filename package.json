@@ -8,7 +8,9 @@
   },
   "dependencies": {
     "express": "^4.17.1",
-    "node-fetch": "^2.6.0"
+    "node-fetch": "^2.6.0",
+    "iconv": "^3.0.0",
+    "iconv-lite": "^0.6.3"
   },
   "engines": {
     "node": "12.x"
