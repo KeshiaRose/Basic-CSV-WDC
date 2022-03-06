@@ -120,3 +120,7 @@ li {
 .tabs.is-toggle a, .tabs.is-fullwidth li {
   height: 100%
 }
+
+.smallLabel {
+  font-size: 12px;
+}
