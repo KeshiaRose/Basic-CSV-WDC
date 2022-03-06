@@ -60,6 +60,8 @@ myConnector.getSchema = async function(schemaCallback) {
     savedCSVData ||
     (await _retrieveCSVData({ dataUrl, method, token, encoding }));
 
+  console.log(data)
+  
   let cols = [];
 
   if (mode === "fast") {
@@ -77,6 +79,7 @@ myConnector.getSchema = async function(schemaCallback) {
     }
   } else {
     let headers = _determineTypes(_parse(data, delimiter, true));
+    console.log(headers)
     for (let field in headers) {
       cols.push({
         id: field,
