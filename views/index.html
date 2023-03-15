@@ -28,7 +28,7 @@
               <div class="info" title="More Info">?</div>
             </a>
           </div>
-
+          <div id="nottableau"></div>
           <div class="field">
             <label class="label">Enter your CSV's URL:</label>
             <div class="control">
@@ -74,7 +74,7 @@
               <label class="label is-small"
                 >Encoding:
                 <a
-                  href="https://github.com/ashtuchkin/iconv-lite/wiki/Supported-Encodings"
+                  href="https://developer.mozilla.org/en-US/docs/Web/API/TextDecoder/encoding"
                   target="_blank"
                   >supported</a
                 ></label
@@ -147,14 +147,20 @@
       style="display:none;"
       aria-hidden="true"
     /><!-- Hit tracker -->
-    <script>
+        <script>
       // Catch browser or non-current Desktop users.
-      setTimeout(function(){
+      setTimeout(function () {
         try {
-          var version = +tableau.platformVersion.split(".").slice(0,2).join(".");
-          if (version < 2019.4) document.body.innerHTML = "<div class='loadError'><p>This WDC only works in Tableau Desktop 2019.4 or higher.</p><p>Your version is: "+version+"</p><p><a href='https://www.tableau.com/support/releases' target='_blank'>Update now.</a></p></div>"
+          var version = +tableau.platformVersion
+            .split(".")
+            .slice(0, 2)
+            .join(".");
+          if (version < 2019.4)
+            document.getElementById("nottableau").innerHTML =
+              "<div class='loadError'><p>This WDC only works in Tableau Desktop 2019.4 or higher.</p><p><a href='https://www.tableau.com/support/releases' target='_blank'>Update now.</a></p></div>";
         } catch (e) {
-          document.body.innerHTML = "<div class='loadError'><p>You must open this WDC in Tableau Desktop 2019.4+ to use it.</p><p>"+e+"</p><p><a href='https://tableau.github.io/webdataconnector/docs/wdc_use_in_tableau.html' target='_blank'>Learn how.</a></p></div>"
+          document.getElementById("nottableau").innerHTML =
+            "<div class='loadError'><p>You must open this WDC in Tableau Desktop 2019.4+ to use it.</p><p><a href='https://tableau.github.io/webdataconnector/docs/wdc_use_in_tableau.html' target='_blank'>Learn how.</a></p></div>";
         }
       }, 1000);
     </script>
