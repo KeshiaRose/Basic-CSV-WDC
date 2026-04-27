@@ -11,14 +11,24 @@ const fetch = require("node-fetch");
 const iconv = require("iconv-lite");
 const app = express();
 
+const isHeroku = !!process.env.DYNO;
+
 app.use(express.static("public"));
 app.use(express.json());
 
 app.get("/", (req, res) => {
-  res.sendFile(__dirname + "/views/index.html");
+  if (isHeroku) {
+    res.sendFile(__dirname + "/views/migrate.html");
+  } else {
+    res.sendFile(__dirname + "/views/index.html");
+  }
 });
 
 app.post("/proxy/*", async (req, res) => {
+  if (isHeroku) {
+    res.status(410).send({ error: "This WDC has moved. Please update your connection URL to https://basic-csv-wdc.onrender.com" });
+    return;
+  }
   let url = req.url.split("/proxy/")[1];
   let options = {
     method: req.body.method

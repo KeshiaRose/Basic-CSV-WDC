@@ -6,7 +6,7 @@ This is a simple [Web Data Connector](https://tableau.github.io/webdataconnector
 
 ## How to use
 
-1. Start a new WDC connection in Tableau Desktop 2019.4 or higher and enter: https://basic-csv-wdc.herokuapp.com/
+1. Start a new WDC connection in Tableau Desktop 2019.4 or higher and enter: https://basic-csv-wdc.onrender.com/
 1. Enter your CSV URL.
 1. Advanced options: Change the HTTP method, delimiter, encoding, or add a Bearer token.
 1. Decide which mode to use (Loose Typed recommended).
@@ -31,7 +31,7 @@ This WDC allows some additional customizations that can be found by clicking on 
 If you want to use this WDC on your Tableau Server you will first need to [add it to your safelist](https://help.tableau.com/current/server/en-us/datasource_wdc.htm) with the following commands:
 
 ```
-tsm data-access web-data-connectors add --name "CSV WDC" --url https://basic-csv-wdc.herokuapp.com:443
+tsm data-access web-data-connectors add --name "CSV WDC" --url https://basic-csv-wdc.onrender.com:443
 tsm pending-changes apply
 ```
 
@@ -41,11 +41,18 @@ Note that this will require your Tableau Server to restart!
 
 If you want to use this WDC on Tableau Online you will need to set it up using [Tableau Bridge](https://help.tableau.com/current/online/en-us/qs_refresh_local_data.htm)
 
-## Deploy your own!
+## How to deploy your own
 
-[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/KeshiaRose/Basic-CSV-WDC)
+I suggest deploying your own version of this WDC so you can have a dedicated application for your own use. Here are a few options for spinning up your own:
 
-[Remix it on glitch](https://glitch.com/edit/#!/remix/simple-csv-wdc)
+1. [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/KeshiaRose/Basic-CSV-WDC)
+
+Or you could host it locally by doing the following:
+
+1. Install [Node.js](https://nodejs.org).
+1. [Clone](https://github.com/KeshiaRose/Basic-CSV-WDC) or download and unzip this repository.
+1. Open the command line within the `Basic-CSV-WDC` master folder and run `npm install` to install the node modules.
+1. Then run `npm start` to start the web server or use something like [pm2](https://pm2.keymetrics.io/) for a production environment.
 
 ## Questions?
 
@@ -53,4 +60,4 @@ If you want to use this WDC on Tableau Online you will need to set it up using [
 
 #### Support
 
-I pay $7/month to host this WDC but I gladly offer it to you for free. If you would like to support this WDC you can [buy me some cheese🧀](https://www.buymeacoffee.com/KeshiaRose)!
+If you would like to show some support for this free WDC you can [buy me some cheese🧀](https://www.buymeacoffee.com/KeshiaRose)!

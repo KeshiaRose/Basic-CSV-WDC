@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: basic-csv-wdc
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node server.js
